@@ -1,0 +1,12 @@
+#!/bin/bash
+cmd=$1
+for x in backend frontend consumers workers
+do (
+    cd ~/work/$x
+    sleep 1
+    pwd
+) &
+done
+
+# Wait for all background processes to complete
+wait

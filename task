@@ -1,0 +1,35 @@
+#!/bin/bash
+#Create branch
+dir=$(dirname "$0")
+# Get the git origin URL
+ORIGIN_URL=$(git config --get remote.origin.url)
+
+# Convert SSH URL to HTTPS if needed
+if [[ $ORIGIN_URL == git@* ]]; then
+    ORIGIN_URL=${ORIGIN_URL#git@}
+    ORIGIN_URL="https://${ORIGIN_URL/:/\/}"
+fi
+
+# Add /branch if it ends with .git
+if [[ $ORIGIN_URL == *.git ]]; then
+    ORIGIN_URL=${ORIGIN_URL%.git}
+else
+    ORIGIN_URL=$ORIGIN_URL
+fi
+branch_name=$1 # Branch name from the first argument e.g https://contellect.atlassian.net/browse/CON-7802
+if [[ $branch_name == http* ]]; then
+    branch_name=${branch_name##*/} # Extract branch name after the last /
+fi
+
+PR_URL="https://bitbucket.org/!api/internal/workspaces/ConetellectMainAccount/pullrequests?pagelen=100&q=state%3D%22OPEN%22%20AND%20draft%3Dfalse%20AND%20queued%3Dfalse%20AND%20source.branch.name%3D%22$branch_name%22"
+
+echo "Checking for existing PRs for branch: $branch_name, URL: $PR_URL"
+#open "$PR_URL"
+# CHROME_COOKIES=$($dir/cookies.js "https://bitbucket.org/ConetellectMainAccount/workspace/overview/") 
+# echo "Extracted cookies: $CHROME_COOKIES"
+# curl -s -b "$CHROME_COOKIES" "$PR_URL"
+
+EmailPASSWORD="bW9zdGFmYS5zYWZ3YXRAY29udGVsbGVjdC5jb206c2Fmd0B0QCAgIEowMQ=="
+PR_ids=$(curl "$PR_URL" -H 'Authorization: Basic '"$EmailPASSWORD" -H 'accept: application/json, text/plain, */*'  | jq -r '.values')
+echo "Existing PR IDs: $PR_ids"
+task CON-8126

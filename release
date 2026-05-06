@@ -1,0 +1,47 @@
+#!/usr/bin/env node
+// run this
+// git tag  v7.0.0
+import semanticRelease from 'semantic-release';
+
+console.log(`Release process started.`);
+const config = {
+  branche: process.argv[2] || "dev",
+}
+await semanticRelease(
+{
+  branches: [
+    {
+      name: "main",
+    },
+    {
+      name: "v7",
+    },
+    { 
+      name: "dev", 
+      prerelease: "dev",
+    },]
+    ,
+  //dryRun:true,
+  ci: false,
+  noCi: true,
+  plugins: [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    "@semantic-release/changelog",
+    [
+      "@semantic-release/npm",
+      {
+        "npmPublish": false,
+      }
+    ],
+    [
+      "@semantic-release/git",// optional: commit changelog + bump
+      {
+        "assets": ["package.json", "package-lock.json", "CHANGELOG.md"],
+      }
+    ]
+
+  ]
+}
+)
+console.log(`Release process completed.`);

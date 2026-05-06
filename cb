@@ -1,0 +1,34 @@
+#!/bin/bash
+#Create branch
+dir=$(dirname "$0")
+# Get the git origin URL
+ORIGIN_URL=$(git config --get remote.origin.url)
+
+# Convert SSH URL to HTTPS if needed
+if [[ $ORIGIN_URL == git@* ]]; then
+    ORIGIN_URL=${ORIGIN_URL#git@}
+    ORIGIN_URL="https://${ORIGIN_URL/:/\/}"
+fi
+
+# Add /branch if it ends with .git
+if [[ $ORIGIN_URL == *.git ]]; then
+    ORIGIN_URL=${ORIGIN_URL%.git}
+else
+    ORIGIN_URL=$ORIGIN_URL
+fi
+branch_name=$1 # Branch name from the first argument e.g https://contellect.atlassian.net/browse/CON-7802
+if [[ $branch_name == http* ]]; then
+    branch_name=${branch_name##*/} # Extract branch name after the last /
+fi
+
+git fetch origin
+git branch $branch_name
+git checkout $branch_name
+git push origin $branch_name
+
+echo "Opening branch at: $ORIGIN_URL/branch/$branch_name"
+
+read -n 1 -s -r -p "Press any key to Create PR ..."
+echo
+
+("$dir/PR")

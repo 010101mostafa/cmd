@@ -1,0 +1,55 @@
+# Use the official Node.js runtime as the base image
+FROM node:20-alpine AS base
+
+# Set the working directory inside the container
+WORKDIR /app
+ARG COMMAND
+# Copy the rest of the application code
+COPY . .
+# RUN echo -e "$COMMAND" > ./command
+# RUN chmod +x ./command
+# RUN ./command
+RUN npm cache clean --force
+# Install dependencies
+RUN npm i   
+# --onlyproduction=
+RUN npm run test
+RUN npm run lint
+
+# Build stage
+FROM base AS build
+ARG ENTRYPOINT=./index.js
+RUN npm i -g @vercel/ncc
+# build the application
+RUN npx ncc build ${ENTRYPOINT} -o ncc -m
+
+# Production stage
+FROM node:20-alpine AS production
+ARG APP_NAME
+ARG APP_VERSION
+ARG TAG
+WORKDIR /app
+# Copy the built site from the build stage
+COPY --from=build /app/ncc /app
+COPY --from=build /app/package.json ./app/package.json
+
+ENV APP_NAME=$APP_NAME
+ENV APP_VERSION=$APP_VERSION
+ENV TAG=$TAG
+ENV PORT=8080
+ENV ACTUATOR_PORT=9090
+
+# Expose the application port
+EXPOSE 8080
+# Expose the application actuator port
+EXPOSE 9090
+
+LABEL full_tag=$TAG
+LABEL app_name=$APP_NAME
+LABEL app_version=$APP_VERSION
+LABEL namespace="csp"
+LABEL build_date="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+
+CMD ["sh", "-c", "echo '{}' > ./app/config/env.json"]
+
+ENTRYPOINT ["node", "/app/index.js"]

@@ -1,0 +1,10 @@
+#!/bin/bash
+echo "************************************************************************"
+#$name=""
+if  [ -z "$1" ] 
+then
+    read name
+else 
+    name=$1
+fi
+ssh administrator@192.168.0.$name

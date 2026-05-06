@@ -1,0 +1,28 @@
+#!/bin/bash
+cmd=$1
+
+declare -A repos=(
+    [backend]="$(ls -d ~/work/backend/*/  | xargs -n 1 basename)"
+    [frontend]="$(ls -d ~/work/frontend/*/  | xargs -n 1 basename)"
+    [consumers]="$(ls -d ~/work/consumers/*/  | xargs -n 1 basename)"
+    [workers]="$(ls -d ~/work/workers/*/  | xargs -n 1 basename)"
+)
+echo "" > /tmp/repo_commands.log
+for type in "${!repos[@]}"; do
+    for repo in ${repos[$type]}; do
+        (
+            log=$(
+            echo -e "----------------------------------------------------------------------------\
+            \n Working in - ~/work/$type/$repo \n [+] $cmd\n"
+            cd ~/work/$type/$repo 
+            $cmd 2>&1
+            )
+            wait # Ensure the command completes before logging
+            echo "$log" >> /tmp/repo_commands.log
+        ) &
+    done
+done
+
+# Wait for all background processes to complete
+wait
+echo "All commands executed. Check /tmp/repo_commands.log for details."

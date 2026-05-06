@@ -1,0 +1,11 @@
+#!/usr/bin/env node
+async function main() {
+    const pkg = await import(`${process.cwd()}/package.json`, { with: { type: 'json' } });
+
+   const { assets } = pkg.default;
+   const all = [...assets.files,...assets.folders];
+   for (const {source, destination} of all) {
+       console.log(`COPY --from=build /app/${source} ${destination}`);
+   }
+}
+main();

@@ -1,0 +1,20 @@
+#!/bin/bash
+dir=$(dirname "$0")
+. $dir/getEnv.sh
+REPOSITORY=dev.local:5005
+echo "start building the tag : $TAG "
+cat $dir/dockerFile > /tmp/dockerFile
+$dir/assets >> /tmp/dockerFile
+echo "the build dockerFile : /tmp/dockerFile"
+docker build -f "/tmp/dockerFile" \
+    -t $REPOSITORY/$TAG \
+    -t $REPOSITORY/$APP_NAME:latest \
+    --build-arg APP_NAME=$APP_NAME \
+    --build-arg APP_VERSION=$APP_VERSION \
+    --build-arg ENTRYPOINT=$ENTRYPOINT \
+    ./dist
+
+docker login dev.local:5005
+docker image push $REPOSITORY/$TAG
+# docker save $TAG -o ./images.tar
+# docker load -i images.tar
