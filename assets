@@ -1,11 +1,18 @@
 #!/usr/bin/env node
+import fs from 'fs';
+const config = {
+    Root: process.argv[2] ?? './.dist',
+}
 async function main() {
     const pkg = await import(`${process.cwd()}/package.json`, { with: { type: 'json' } });
 
    const { assets } = pkg.default;
+   if (!assets) return;
    const all = [...assets.files,...assets.folders];
    for (const {source, destination} of all) {
-       console.log(`COPY --from=build /app/${source} ${destination}`);
+        const destinationPath =  `${config.Root}/${destination}`;
+       console.log(`COPY  ${source} to ${destinationPath}`);
+       fs.copyFileSync(source, destinationPath);
    }
 }
 main();

@@ -1,0 +1,12 @@
+#!/bin/bash
+. getEnv.sh
+cat $dir/dockerFile > /tmp/dockerFile
+echo "the build dockerFile : file:///tmp/dockerFile"
+echo "building from dir : ./.dist"
+docker build -f "/tmp/dockerFile" \
+    -t $TAG \
+    -t $LatestTag \
+    --build-arg APP_NAME=$APP_NAME \
+    --build-arg APP_VERSION=$APP_VERSION \
+    --build-arg ENTRYPOINT=$ENTRYPOINT \
+    ./.dist

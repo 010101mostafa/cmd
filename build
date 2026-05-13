@@ -1,20 +1,29 @@
 #!/bin/bash
 dir=$(dirname "$0")
 . $dir/getEnv.sh
-REPOSITORY=dev.local:5005
-echo "start building the tag : $TAG "
-cat $dir/dockerFile > /tmp/dockerFile
-$dir/assets >> /tmp/dockerFile
-echo "the build dockerFile : /tmp/dockerFile"
-docker build -f "/tmp/dockerFile" \
-    -t $REPOSITORY/$TAG \
-    -t $REPOSITORY/$APP_NAME:latest \
-    --build-arg APP_NAME=$APP_NAME \
-    --build-arg APP_VERSION=$APP_VERSION \
-    --build-arg ENTRYPOINT=$ENTRYPOINT \
-    ./dist
 
-docker login dev.local:5005
-docker image push $REPOSITORY/$TAG
-# docker save $TAG -o ./images.tar
-# docker load -i images.tar
+case "$APP_TYPE" in
+  node)
+        echo "Detected Node.js application"
+        ENTRYPOINT=$(npm pkg get bin | jq -r)
+        echo "APPNAME : $(npm pkg get name | jq -r)"
+        echo "ENTRYPOINT : $ENTRYPOINT"
+        npx ncc build ${ENTRYPOINT}  -m -o ./.dist
+        assets
+        echo "node \$0/../index.js" > ./.dist/run.sh
+        chmod 777 ./.dist/run.sh
+    ;;
+  dotnet)
+    echo "Detected .NET application"
+    dotnet publish -c Release -o ./.dist
+    echo "dotnet run" > ./.dist/run.sh
+    chmod 777 ./.dist/run.sh
+    ;;
+  angular)
+    echo "Detected Angular application"
+    ng build --configuration=production --output-path=./.dist
+    ;;
+  *)
+    echo "No application type detected. Defaulting to 'unknown'."
+    ;;
+esac

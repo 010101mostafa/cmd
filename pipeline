@@ -1,0 +1,45 @@
+#!/bin/bash
+rm -rf ./.logs
+mkdir -p ./.logs
+echo "=============================================================="
+# Step: Install Dependencies
+echo "==> Install Dependencies"
+echo "+ npm install"
+#echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > .npmrc
+npm install > ./.logs/npm-install.log
+
+# Step: Build
+if [ -f "tsconfig.json" ]; then
+    echo "=============================================================="
+    echo "Detected TypeScript project"
+    echo "===> ts build"
+    echo "+ npx tsc"
+    npx tsc > ./.logs/npm-build.log 
+fi
+
+# Step: Lint Code
+echo "=============================================================="
+echo "==> Lint Code"
+if [ "$(npm pkg get scripts.lint:error | jq -r)" != "{}" ]; then
+    echo "+ npm run lint:error"
+    npm run lint:error > ./.logs/npm-lint.log
+fi
+if [ "$(npm pkg get scripts.lint:styles | jq -r)" != "{}" ]; then
+    echo "+ npm run lint:styles"
+    npm run lint:styles >> ./.logs/npm-lint.log
+fi
+echo "=============================================================="
+echo "==> Build Application"
+echo "+ build"
+build > ./.logs/build.log 
+echo "=============================================================="
+echo "==> Build Docker Image"
+echo "+ buildDocker"
+buildDocker > ./.logs/docker-build.log 
+echo "=============================================================="
+
+# docker login dev.local:5005
+# docker image push $TAG
+# docker save $TAG -o ./images.tar
+# docker load -i images.tar
+
