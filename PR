@@ -3,6 +3,12 @@
 # Get the git origin URL
 ORIGIN_URL=$(git config --get remote.origin.url)
 
+# If origin points to a local path (worktree pointing to main clone), follow it
+if [[ $ORIGIN_URL != git@* && $ORIGIN_URL != http* ]]; then
+    ORIGIN_URL=$(git -C "$ORIGIN_URL" remote get-url origin 2>/dev/null || \
+                 git --git-dir="$ORIGIN_URL/.git" config --get remote.origin.url)
+fi
+
 # Convert SSH URL to HTTPS if needed
 if [[ $ORIGIN_URL == git@* ]]; then
     ORIGIN_URL=${ORIGIN_URL#git@}

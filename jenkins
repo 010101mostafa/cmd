@@ -1,0 +1,18 @@
+#!/bin/bash
+. getEnv.sh
+
+Type="auto"
+case "$APP_TYPE" in
+  "node"|"angular")
+    type="ECM-Core"
+    ;;
+  "angular")
+    type="ECM-Core"
+    ;;
+  *)
+    type="ECM-Core"
+    ;;
+esac
+echo "type : $type"
+echo "app name : $APP_NAME"
+google-chrome http://20.102.127.190:8080/job/$type/job/$APP_NAME/

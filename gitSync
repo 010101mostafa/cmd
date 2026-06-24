@@ -1,0 +1,10 @@
+#!/bin/bash
+echo "**  dev branch **"
+git checkout dev
+git pull 
+git push
+echo "**  release branch **"
+
+git checkout release/v7.0.0
+git pull
+git push

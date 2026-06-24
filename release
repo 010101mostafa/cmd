@@ -2,12 +2,20 @@
 // run this
 // git tag  v7.0.0
 import semanticRelease from 'semantic-release';
+import { Writable} from 'stream';
 
-console.log(`Release process started.`);
 const config = {
   branche: process.argv[2] || "dev",
+  log : !! process.argv.some(arg => arg === "--log") 
 }
-await semanticRelease(
+const stdout = config.log ? process.stdout : new Writable({
+  write(chunk, encoding, callback) {
+    callback();
+  }
+});
+const logger = new console.Console(stdout, process.stderr);
+logger.log(`Release process started.`);
+const result = await semanticRelease(
 {
   branches: [
     {
@@ -25,23 +33,43 @@ await semanticRelease(
   ci: false,
   noCi: true,
   plugins: [
+    // analyzeCommits: Determine the type of release by analyzing commits with conventional-changelog
     "@semantic-release/commit-analyzer",
+    // generateNotes: Generate release notes for the commits added since the last release with conventional-changelog
     "@semantic-release/release-notes-generator",
+    // verifyConditions: Verify the presence and the validity of the configuration
+    // prepare: Create or update the changelog file in the local project repository
     "@semantic-release/changelog",
     [
+      // verifyConditions: Verify the presence and the validity of the npm authentication and release configuration
+      // prepare: Update the package.json version and create the npm package tarball
+      // publish: Publish the package on the npm registry (disabled here via npmPublish: false)
       "@semantic-release/npm",
       {
         "npmPublish": false,
       }
     ],
-    [
-      "@semantic-release/git",// optional: commit changelog + bump
-      {
-        "assets": ["package.json", "package-lock.json", "CHANGELOG.md"],
-      }
-    ]
+    // [
+    //   // verifyConditions: Verify the presence and the validity of the Git authentication and release configuration
+    //   // prepare: Push a release commit and tag, including configurable files (package.json, package-lock.json, CHANGELOG.md)
+    //   "@semantic-release/git",
+    //   {
+    //     "assets": ["package.json", "package-lock.json", "CHANGELOG.md"],
+    //   }
+    // ]
 
   ]
+},{
+  stdout: stdout,
 }
 )
-console.log(`Release process completed.`);
+if (result) {
+  const { nextRelease } = result;
+  // print exports so the caller can eval them into the shell:
+  // usage: eval $(node release)
+  console.log(`export RELEASE_VERSION="${nextRelease.version}"`);
+  console.log(`export RELEASE_NOTES="${nextRelease.notes?.replace(/"/g, '\\"')}"`);
+  console.log(`export RELEASE="${nextRelease.name}"`);
+  console.log(`export RELEASE_TYPE="${nextRelease.type}"`);
+}
+logger.log(`Release process completed.`);
