@@ -7,6 +7,7 @@ taskDir="$copilotPATH/$taskname"
 
 use_opencode=false
 load_env=false
+agentsEnv=".env4" # default environment
 while getopts "oe:" opt; do
   case $opt in
     o)
@@ -62,8 +63,9 @@ ln -s ../.github/agents .opencode/agents
 
 if [ "$use_opencode" = true ]; then
     opencode \
-     --prompt "start as Orchestrator" \
-     --agent Orchestrator
+     --prompt "skill(orchestrator)" \
+     --agent Orchestrator \
+     --port 4030 
 else
 
 # run copilot 
@@ -80,7 +82,7 @@ else
 # else
 copilot \
     -C "$taskDir" \
-    -i "start as Orchestrator" \
+    -i "skill(orchestrator)" \
     --name="$taskname" \
     --allow-all \
     --log-dir "$taskDir/.logs" \

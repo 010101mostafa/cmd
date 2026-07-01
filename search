@@ -1,0 +1,47 @@
+#!/usr/bin/env node
+import { Command, Option } from "commander";
+import pkg from "./package.json" with { type: "json" };
+import { join } from "path";
+import { init } from "./for_search/init.mjs";
+import { db } from "./for_search/db.mjs";
+import { search } from "./for_search/search.mjs";
+
+const program = new Command();
+function log(fn) {
+    return async (...args) => {
+        console.log(await fn.call(null, ...args));
+    }
+}
+program
+    .name("search")
+    .description("A CLI tool for searching skills using semantic search")
+    .version(pkg.version);
+
+program
+    .command("init")
+    .description("Initialize the application")
+    .argument("<jsonFilePath>", "Path to the JSON file containing the data")
+    .argument("<index...>", "Index fields for the data")
+    .action(init);
+program
+    .argument("<resource>", "The resource to search")
+    .option("-q, --query <query>", "The search query","")
+    .option("-l, --limit <limit>", "The number of results to return", Number, 3)
+    .option("--offset <offset>", "The number of results to skip", Number, 0)
+    .option("-f, --fulltext", "with fulltext search", false)
+    .option("-s, --semantic", "with semantic search", false)
+    .option("-o, --output <output>", "output key")
+    .action(log(search));
+main();
+
+async function main() {     
+    process.env.IS_CLI = "true";
+    try {   
+        await program.parseAsync();
+    } catch (error) {
+        console.error(error);
+        process.exit(1);
+    }finally {
+        db.close();
+    }
+}

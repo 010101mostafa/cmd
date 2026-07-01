@@ -1,0 +1,31 @@
+currentDirectory=$(pwd)
+if [ -z "$1" ]; then
+  echo "Usage: $0 <local_repo_path>"
+  exit 1
+fi
+local_repo_path=$1 # The path to the local repository
+repo_name=$(basename "$local_repo_path")
+ISSUE_NAME=$(basename "$PWD")
+source_branch=${2:-"dev"} # The source branch from which to create the issue branch
+
+echo "Current Directory: $currentDirectory"
+echo "Local Repository Path: $local_repo_path"
+echo "Issue Name: $ISSUE_NAME"
+echo "Source Branch: $source_branch"
+echo "Repository Name: $repo_name"
+cd $local_repo_path
+git switch $source_branch
+git pull origin $source_branch
+# require to prune worktrees that are no longer valid
+git worktree prune
+# Create the issue branch from the source branch (not from main)
+git branch --no-track $ISSUE_NAME $source_branch
+git push origin $ISSUE_NAME
+# Create the worktree for the issue branch
+git worktree add $currentDirectory/$repo_name $ISSUE_NAME
+
+
+# rebase the issue branch with the source branch to ensure it's up to date
+cd $currentDirectory/$repo_name
+git switch $ISSUE_NAME
+git pull --rebase origin $source_branch

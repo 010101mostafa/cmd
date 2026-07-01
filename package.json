@@ -15,8 +15,11 @@
   "dependencies": {
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
+    "better-sqlite3": "^12.11.1",
     "chrome-cookies-secure": "^3.0.2",
-    "semantic-release": "^25.0.3"
+    "commander": "^15.0.0",
+    "semantic-release": "^25.0.3",
+    "sqlite-vec": "^0.1.9"
   },
   "devDependencies": {
     "playwright": "^1.59.1"
