@@ -1,10 +1,14 @@
+#!/bin/bash
 currentDirectory=$(pwd)
 if [ -z "$1" ]; then
-  echo "Usage: $0 <local_repo_path>"
+  echo "Usage: $0 <repo_name>"
   exit 1
 fi
-local_repo_path=$1 # The path to the local repository
-repo_name=$(basename "$local_repo_path")
+repo_name=$1
+res_json=$(search codebase -q "$repo_name" -l1 )
+echo "Response JSON: $res_json"
+local_repo_path=$(echo "$res_json" | jq -r '.localFile'|sed "s|~|$HOME|g")
+repo_name=$(echo "$res_json" | jq -r '.appName')
 ISSUE_NAME=$(basename "$PWD")
 source_branch=${2:-"dev"} # The source branch from which to create the issue branch
 
@@ -13,19 +17,25 @@ echo "Local Repository Path: $local_repo_path"
 echo "Issue Name: $ISSUE_NAME"
 echo "Source Branch: $source_branch"
 echo "Repository Name: $repo_name"
+if [ ! -d "$local_repo_path" ]; then
+  echo "Error: Local repository path '$local_repo_path' does not exist."
+  exit 1
+fi
 cd $local_repo_path
 git switch $source_branch
 git pull origin $source_branch
 # require to prune worktrees that are no longer valid
 git worktree prune
 # Create the issue branch from the source branch (not from main)
+
 git branch --no-track $ISSUE_NAME $source_branch
-git push origin $ISSUE_NAME
 # Create the worktree for the issue branch
 git worktree add $currentDirectory/$repo_name $ISSUE_NAME
 
 
 # rebase the issue branch with the source branch to ensure it's up to date
 cd $currentDirectory/$repo_name
+git pull 
 git switch $ISSUE_NAME
-git pull --rebase origin $source_branch
+git rebase $source_branch
+git push origin 

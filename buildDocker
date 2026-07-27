@@ -1,6 +1,26 @@
 #!/bin/bash
 . getEnv.sh
-cat $dir/dockerFile > /tmp/dockerFile
+
+
+case "$APP_TYPE" in
+    node)
+    echo "FROM node:20-alpine" >  /tmp/dockerFile
+    ;;
+  dotnet)
+    echo "FROM node:20-alpine" >  /tmp/dockerFile
+    ;;
+  angular)
+    echo "FROM node:20-alpine" >  /tmp/dockerFile
+    ;;
+  java)
+    echo "FROM eclipse-temurin:21-jre-alpine" >  /tmp/dockerFile
+    ;;
+  *)
+    echo "No application type detected. Defaulting to 'unknown'."
+    exit 1
+    ;;
+esac
+cat $dir/dockerFile >> /tmp/dockerFile
 echo "the build dockerFile : file:///tmp/dockerFile"
 echo "building from dir : ./.dist"
 docker build -f "/tmp/dockerFile" \

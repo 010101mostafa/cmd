@@ -1,0 +1,2 @@
+
+  cp -r ./lib ../core-binary-streaming/node_modules/@contellect/csp-base-pkg/lib

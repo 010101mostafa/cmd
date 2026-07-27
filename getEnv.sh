@@ -1,7 +1,7 @@
 dir=$(dirname "$0")
 APP_NAME=$(git remote get-url origin | sed 's/.*\///' | sed 's/\.git//')
 APP_VERSION=$(git describe --tags --dirty=-d --always)
-REPOSITORY=dev.local:5005
+REPOSITORY=safwat.registry.local
 TAG="$REPOSITORY/$APP_NAME:$APP_VERSION"
 LatestTag="$REPOSITORY/$APP_NAME:latest"
 APP_TYPE="unknown" #node|dotnet|angular
@@ -13,6 +13,8 @@ elif [ -f "angular.json" ]; then
   APP_TYPE="angular"
 elif [ -f "package.json" ]; then
   APP_TYPE="node"
+elif [ -f "pom.xml" ]; then
+  APP_TYPE="java"
 fi
 export dir
 export TAG

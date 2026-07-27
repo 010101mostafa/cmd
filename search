@@ -9,7 +9,7 @@ import { search } from "./for_search/search.mjs";
 const program = new Command();
 function log(fn) {
     return async (...args) => {
-        console.log(await fn.call(null, ...args));
+        console.log(JSON.stringify(await fn.call(null, ...args), null, 2));
     }
 }
 program
@@ -30,7 +30,7 @@ program
     .option("--offset <offset>", "The number of results to skip", Number, 0)
     .option("-f, --fulltext", "with fulltext search", false)
     .option("-s, --semantic", "with semantic search", false)
-    .option("-o, --output <output>", "output key")
+    .option("--stats", "get staus the dataType and count of the resource", false)
     .action(log(search));
 main();
 

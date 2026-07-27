@@ -24,13 +24,13 @@ while getopts "oe:" opt; do
   esac
 done
 
-if [ -d "$copilotPATH/$agentsEnv" ]; then
+if [ -d "$copilotPATH/AiFiles/$agentsEnv" ]; then
     agentsEnv="$agentsEnv"
-elif [ -d "$copilotPATH/.env3" ]; then
+elif [ -d "$copilotPATH/AiFiles/.env3" ]; then
     agentsEnv=".env3"
-elif [ -d "$copilotPATH/.env2" ]; then
+elif [ -d "$copilotPATH/AiFiles/.env2" ]; then
     agentsEnv=".env2"
-elif [ -d "$copilotPATH/.env1" ]; then
+elif [ -d "$copilotPATH/AiFiles/.env1" ]; then
     agentsEnv=".env1"
 fi
 
@@ -46,20 +46,15 @@ if [ -d "$taskDir/.copilot" ]; then
     rm -rf "$taskDir/.copilot"
 fi
 # Copy files
-if [ -d "$copilotPATH/.vscode" ]; then
-    cp -r "$copilotPATH/.vscode" "$taskDir/"
+if [ -d "$copilotPATH/AiFiles/.vscode" ]; then
+    ln -sf "$copilotPATH/AiFiles/.vscode" "$taskDir/.vscode"
 fi
 mkdir -p "$taskDir/.github"
 mkdir -p "$taskDir/.logs"
-if [ -d "$copilotPATH/$agentsEnv" ]; then
-    cp -r "$copilotPATH/$agentsEnv"/* "$taskDir/.github"
+if [ -d "$copilotPATH/AiFiles/$agentsEnv" ]; then
+    ln -sf "$copilotPATH/AiFiles/$agentsEnv"/* "$taskDir/.github"
+    ln -sf "$copilotPATH/AiFiles/$agentsEnv" "$taskDir/.opencode"
 fi
-# Create the .opencode directory if it doesn't exist
-mkdir -p .opencode
-
-# Symlink your github skills and agents into OpenCode's native path
-ln -s ../.github/skills .opencode/skills
-ln -s ../.github/agents .opencode/agents
 
 if [ "$use_opencode" = true ]; then
     opencode \

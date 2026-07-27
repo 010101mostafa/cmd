@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 dir=$(dirname "$0")
 . $dir/getEnv.sh
 
@@ -22,6 +23,16 @@ case "$APP_TYPE" in
   angular)
     echo "Detected Angular application"
     ng build --configuration=production --output-path=./.dist
+    ;;
+  java)
+    echo "Detected Java application"
+    mvn clean package
+    mkdir -p ./.dist
+    cp target/*.jar ./.dist/
+    cp "$(ls target/*.jar | head -1)" ./.dist/main.jar
+    echo "java -jar ./main.jar" > ./.dist/run.sh
+    chmod 777 ./.dist/run.sh
+    cd 
     ;;
   *)
     echo "No application type detected. Defaulting to 'unknown'."

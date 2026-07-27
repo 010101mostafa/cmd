@@ -8,8 +8,11 @@ function indexsql(resource, indexFields) {
     `;
 }
 export async function search(resource, options) {
-    const { query, limit = 10, offset = 0, semantic = false, fulltext = false, output } = options;
+    const { query, limit = 10, offset = 0, semantic = false, fulltext = false , stats = false} = options;
     let result = [];
+    if (stats) {
+        return getStats(resource);
+    }
     if (semantic) {
             const embedding = await getEmbedding(query);
             result = db.prepare(`SELECT r.* 
@@ -31,11 +34,12 @@ export async function search(resource, options) {
     `).all(`%${query}%`, limit, offset);
     }
     result = result.map(r => JSON.parse(r.fulltext));
-    if (output) {
-        result = result.map(r => r[output]);
-    }
     if(result.length === 1) {
         return result[0];
     }
     return result;
+}
+function getStats(resource) {
+    const count = db.prepare(`SELECT COUNT(*) as count FROM ${resource}`).get().count;
+    return { count };
 }

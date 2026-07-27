@@ -1,6 +1,7 @@
 #!/bin/bash
-rm -rf ./.logs
+set -e
 mkdir -p ./.logs
+. getEnv.sh
 echo "=============================================================="
 # Step: Install Dependencies
 echo "==> Install Dependencies"
@@ -38,8 +39,17 @@ echo "+ buildDocker"
 buildDocker > ./.logs/docker-build.log 
 echo "=============================================================="
 
-# docker login dev.local:5005
-# docker image push $TAG
+echo "==> Push Docker Image"
+echo "+ docker image push $TAG"
+echo "+ docker image push $LatestTag"
+# docker login $REPOSITORY 
+docker image push $TAG > ./.logs/docker-push.log
+docker image push $LatestTag >> ./.logs/docker-push.log
 # docker save $TAG -o ./images.tar
 # docker load -i images.tar
 
+echo "=============================================================="
+echo "==> Update Kubernetes Deployment Delivery And Restart"
+echo "+ kubectl set image statefulset/camunda-zeebe init-activemq-exporter=$TAG -n camunda"
+kubectl set image statefulset/camunda-zeebe init-activemq-exporter=$TAG \
+  -n camunda 
