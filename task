@@ -1,60 +1,22 @@
 #!/bin/bash
 #Create branch
+set -e
 dir=$(dirname "$0")
-copilotPATH=~/copilotDir
+workspace=~/workspace
 issueurl=$1 # Branch name from the first argument e.g https://contellect.atlassian.net/browse/CON-7802
-goal=${2:-"work on $issueurl"} # Optional second argument to specify the goal (default: "work on <issue_name>")
 taskname=$issueurl
 if [[ $issueurl == http* ]]; then
     taskname=${issueurl##*/} # Extract branch name after the last /
 fi
 
-taskDir="$copilotPATH/$taskname"
+taskDir="$workspace/$taskname"
 echo "issue url : $issueurl"
 echo "task Name : $taskname"
 echo "issue directory : $taskDir"
 
 # 2. Create the folder if it does not exist for issue `./<issue_name>` . (edit tool)
 if [ ! -d "$taskDir" ]; then
-    mkdir "$taskDir"
+    mkdir -p "$taskDir"
 fi
-# 3. in ./<issue_name> 
-#  - add .env file with  (edit tool)
-#     ```env
-#     ISSUE_NAME=<issue_name> 
-#     JIRA_URL=<original_input_if_url>
-#     ```
-#  - add summary.md with (edit tool)
-#     ```
-#     ## goal
-#      fix issue <original_input>
-#     ```
-#   - copy .vscode/* from root if exists (edit tool)
-if [ ! -f "$taskDir/summary.md" ]; then
-    echo -e "ISSUE_NAME=$taskname\nJIRA_URL=\"$issueurl\"" > "$taskDir/.env"
-    cat > "$taskDir/summary.md" << EOF
-## goal
-    $goal
-
-## prompts: 
-+ start $goal
----
-
-EOF
-fi
-
-# remove previous copilot data if exists
-if [ -d "$taskDir/.github" ]; then
-    rm -rf "$taskDir/.github"
-fi
-if [ -d "$taskDir/.copilot" ]; then
-    rm -rf "$taskDir/.copilot"
-fi
-# Copy files
-if [ -d "$copilotPATH/.vscode" ]; then
-    cp -r "$copilotPATH/.vscode" "$taskDir/"
-fi
-mkdir -p "$taskDir/.github"
-mkdir -p "$taskDir/.logs"
-# run copilot 
-code "$taskDir"
+# run zed
+zed $taskDir
